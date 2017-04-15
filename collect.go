@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"github.com/icha024/go-collect-logs/sse"
@@ -61,14 +62,17 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
+				var buf bytes.Buffer // A Buffer needs no initialization.
 				for readIdx != writeIdx {
 					fmt.Printf(logArr[readIdx])
-					broker.Notifier <- []byte(logArr[readIdx])
+					// broker.Notifier <- []byte(logArr[readIdx])
+					buf.Write([]byte(logArr[readIdx]))
 					readIdx++
 					if readIdx == *maxLogEntries {
 						readIdx = 0
 					}
 				}
+				broker.Notifier <- buf.Bytes()
 			}
 		}
 	}()
