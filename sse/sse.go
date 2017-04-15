@@ -65,6 +65,7 @@ func (broker *Broker) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	rw.Header().Set("Cache-Control", "no-cache")
 	rw.Header().Set("Connection", "keep-alive")
 	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	// rw.Header().Set("Content-Encoding", "gzip")
 
 	// Each connection registers its own message channel with the Broker's connections registry
 	messageChan := make(chan []byte)

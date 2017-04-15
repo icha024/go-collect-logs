@@ -8,12 +8,14 @@ import (
 	"gopkg.in/mcuadros/go-syslog.v2/format"
 	"log"
 	"net/http"
-	// "os"
+	"net/url"
+	"strings"
 	"time"
 )
 
 func main() {
-	var maxLogEntries = flag.Int("max-log-entries", 10, "Maximum number of log entries to keep. Approx 1KB/entry.")
+	var maxLogEntries = flag.Int("max-log-entries", 50000, "Maximum number of log entries to keep. Approx 1KB/entry.")
+	var maxFilterEntries = flag.Int("max-filter-entries", 100, "Maximum number of fitlered log entries to return.")
 	var logReadInteval = flag.Int("log-read-inteval", 3, "Interval, in seconds, to read syslog into memory.")
 	var syslogHost = flag.String("syslog-host", "0.0.0.0", "Syslog host to listen on.")
 	var syslogPort = flag.Int("syslog-port", 10514, "Syslog port to listen on.")
@@ -28,16 +30,16 @@ func main() {
 	server := syslog.NewServer()
 	server.SetFormat(syslog.Automatic)
 	server.SetHandler(handler)
-	sysLogServerDetail := fmt.Sprintf("%s:%d", *syslogHost, *syslogPort)
-	server.ListenUDP(sysLogServerDetail)
-	server.ListenTCP(sysLogServerDetail)
+	syslogServerDetail := fmt.Sprintf("%s:%d", *syslogHost, *syslogPort)
+	server.ListenUDP(syslogServerDetail)
+	server.ListenTCP(syslogServerDetail)
 	server.Boot()
 
 	logArr := make([]string, *maxLogEntries, *maxLogEntries)
 	var writeIdx int
 	var readIdx int
 	broker := sse.NewServer()
-	fmt.Printf("Syslog collector started on: %s \n", sysLogServerDetail)
+	fmt.Printf("Syslog collector started on: %s \n", syslogServerDetail)
 
 	go func(channel syslog.LogPartsChannel) {
 		var logEntry string
@@ -67,13 +69,41 @@ func main() {
 						readIdx = 0
 					}
 				}
-
 			}
 		}
 	}()
 
+	http.HandleFunc("/filter", func(w http.ResponseWriter, r *http.Request) {
+		query, err := url.QueryUnescape(r.URL.Query().Get("q"))
+		if err != nil || len(query) == 0 {
+			// log.Println("Invalid query")
+			return
+		}
+
+		searchIdx := writeIdx
+		// if searchIdx < 0 {
+		// 	searchIdx = *maxLogEntries - 1
+		// }
+		for i := 0; i < *maxLogEntries; i++ {
+			// fmt.Printf(logArr[readIdx])
+			if searchIdx < 0 {
+				searchIdx = *maxLogEntries - 1
+			}
+			logEntry := logArr[searchIdx]
+			match := strings.Contains(logEntry, query)
+			if match {
+				fmt.Fprintf(w, "%s", logArr[searchIdx])
+			}
+			if i > *maxFilterEntries {
+				return
+			}
+			searchIdx--
+		}
+		// fmt.Fprintf(w, "Query: %s", query)
+	})
+	http.Handle("/stream", broker)
 	serverDetail := fmt.Sprintf("%s:%d", *host, *port)
-	log.Fatal("HTTP server error: ", http.ListenAndServe(serverDetail, broker))
+	log.Fatal("HTTP server error: ", http.ListenAndServe(serverDetail, nil))
 	server.Wait()
 }
 
@@ -117,7 +147,6 @@ func parseLogEntry(logParts format.LogParts, isParseSev bool) *string {
 	} else {
 		logStr = fmt.Sprintf("[%s][%s][%s]: %s\n", ts, hostname, tag, msg)
 	}
-	// logStr := fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
 	return &logStr
 }
 
