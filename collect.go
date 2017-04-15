@@ -63,31 +63,10 @@ func main() {
 		for {
 			select {
 			case <-ticker.C:
-				var buf bytes.Buffer // A Buffer needs no initialization.
-				// for readIdx != writeIdx {
-				// 	fmt.Printf(logArr[readIdx])
-				// 	// broker.Notifier <- []byte(logArr[readIdx])
-				// 	buf.Write([]byte(logArr[readIdx]))
-				// 	readIdx++
-				// 	if readIdx == *maxLogEntries {
-				// 		readIdx = 0
-				// 	}
-				// }
-
-				// if *enableStdout {
-				// 	for readIdx != writeIdx {
-				// 		fmt.Printf(logArr[readIdx])
-				// 		readIdx++
-				// 		if readIdx == *maxLogEntries {
-				// 			readIdx = 0
-				// 		}
-				// 	}
-				// }
-
+				var buf bytes.Buffer
 				tmp := writeIdx
 				searchIdx := tmp
 				for readIdx != searchIdx {
-					// fmt.Printf(logArr[searchIdx])
 					buf.Write([]byte(logArr[searchIdx]))
 					searchIdx--
 				}
@@ -108,22 +87,21 @@ func main() {
 
 	http.HandleFunc("/filter", func(w http.ResponseWriter, r *http.Request) {
 		query, err := url.QueryUnescape(r.URL.Query().Get("q"))
-		if err != nil || len(query) == 0 {
-			// log.Println("Invalid query")
+		if err != nil {
 			return
 		}
 
 		searchIdx := writeIdx
-		// if searchIdx < 0 {
-		// 	searchIdx = *maxLogEntries - 1
-		// }
 		for i := 0; i < *maxLogEntries; i++ {
-			// fmt.Printf(logArr[readIdx])
 			if searchIdx < 0 {
 				searchIdx = *maxLogEntries - 1
 			}
 			logEntry := logArr[searchIdx]
-			match := strings.Contains(logEntry, query)
+			match := true
+			if len(query) > 0 {
+				match = strings.Contains(logEntry, query)
+			}
+
 			if match {
 				fmt.Fprintf(w, "%s", logArr[searchIdx])
 			}
@@ -132,7 +110,6 @@ func main() {
 			}
 			searchIdx--
 		}
-		// fmt.Fprintf(w, "Query: %s", query)
 	})
 	http.Handle("/stream", broker)
 	serverDetail := fmt.Sprintf("%s:%d", *host, *port)
