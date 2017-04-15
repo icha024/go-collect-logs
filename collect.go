@@ -4,16 +4,21 @@ import (
 	"bufio"
 	"fmt"
 	"gopkg.in/mcuadros/go-syslog.v2"
+	"gopkg.in/mcuadros/go-syslog.v2/format"
 	"os"
+	"time"
 )
 
 func main() {
+	maxLogEntries := 10
+	logArr := make([]string, maxLogEntries)
+	var writeIdx int
+	var readIdx int
+
 	channel := make(syslog.LogPartsChannel)
 	handler := syslog.NewChannelHandler(channel)
 
 	server := syslog.NewServer()
-	// server.SetFormat(syslog.RFC5424)
-	// server.SetFormat(syslog.RFC3164)
 	server.SetFormat(syslog.Automatic)
 	server.SetHandler(handler)
 	server.ListenUDP("0.0.0.0:10514")
@@ -22,40 +27,106 @@ func main() {
 	fmt.Println("Log collector started.")
 
 	go func(channel syslog.LogPartsChannel) {
+		var logEntry string
 		for logParts := range channel {
-			fmt.Println(logParts)
-			// RFC3164
-			// 	"timestamp": p.header.timestamp,
-			// 	"hostname":  p.header.hostname,
-			// 	"tag":       p.message.tag,
-			// 	"content":   p.message.content,
-			// 	"priority":  p.priority.P,
-			// 	"facility":  p.priority.F.Value,
-			// 	"severity":  p.priority.S.Value,
+			// fmt.Println(logParts)
+			logEntry = *parseLogEntry(logParts)
+			newWriteIdx := writeIdx + 1
+			if newWriteIdx >= maxLogEntries {
+				newWriteIdx = 0
+			}
+			logArr[newWriteIdx] = logEntry
+			writeIdx = newWriteIdx
 
-			// RFC5424
-			// "priority":        p.header.priority.P,
-			// "facility":        p.header.priority.F.Value,
-			// "severity":        p.header.priority.S.Value,
-			// "version":         p.header.version,
-			// "timestamp":       p.header.timestamp,
-			// "hostname":        p.header.hostname,
-			// "app_name":        p.header.appName,
-			// "proc_id":         p.header.procId,
-			// "msg_id":          p.header.msgId,
-			// "structured_data": p.structuredData,
-			// "message":         p.message,
-			fmt.Printf("[%s][%s][%s] %s\n", logParts["timestamp"], logParts["hostname"], logParts["tag"], logParts["content"])
+			// fmt.Printf(logArr[newWriteIdx])
 		}
 	}(channel)
+
+	ticker := time.NewTicker(3 * time.Second)
+	go func() {
+		for {
+			select {
+			case <-ticker.C:
+				for readIdx != writeIdx {
+					fmt.Printf(logArr[readIdx])
+					readIdx++
+					if readIdx == maxLogEntries {
+						readIdx = 0
+					}
+				}
+
+			}
+		}
+	}()
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
 		fmt.Println(text)
-		// if text == "quit" {
-		// 	break
-		// }
 	}
 	server.Wait()
+}
+
+func parseLogEntry(logParts format.LogParts) *string {
+	// RFC3164
+	// 	"timestamp": p.header.timestamp,
+	// 	"hostname":  p.header.hostname,
+	// 	"tag":       p.message.tag,
+	// 	"content":   p.message.content,
+	// 	"priority":  p.priority.P,
+	// 	"facility":  p.priority.F.Value,
+	// 	"severity":  p.priority.S.Value,
+
+	// RFC5424
+	// "priority":        p.header.priority.P,
+	// "facility":        p.header.priority.F.Value,
+	// "severity":        p.header.priority.S.Value,
+	// "version":         p.header.version,
+	// "timestamp":       p.header.timestamp,
+	// "hostname":        p.header.hostname,
+	// "app_name":        p.header.appName,
+	// "proc_id":         p.header.procId,
+	// "msg_id":          p.header.msgId,
+	// "structured_data": p.structuredData,
+	// "message":         p.message,
+
+	ts := logParts["timestamp"]
+	hostname := logParts["hostname"]
+	tag := logParts["tag"]
+	if tag == nil {
+		tag = logParts["app_name"]
+	}
+	sev := parseSeverity(logParts["severity"])
+	msg := logParts["message"]
+	if msg == nil {
+		msg = logParts["content"]
+	}
+	str := fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
+	return &str
+}
+
+func parseSeverity(sev interface{}) string {
+	sevNum, ok := sev.(int)
+	if !ok {
+		return ""
+	}
+	switch sevNum {
+	case 0:
+		return "emerg"
+	case 1:
+		return "alert"
+	case 2:
+		return "crit"
+	case 3:
+		return "err"
+	case 4:
+		return "warning"
+	case 5:
+		return "notice"
+	case 6:
+		return "info"
+	case 7:
+		return "debug"
+	}
+	return ""
 }
