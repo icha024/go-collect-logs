@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"gopkg.in/mcuadros/go-syslog.v2/format"
@@ -10,10 +11,12 @@ import (
 )
 
 func main() {
-	maxLogEntries := 10
-	logArr := make([]string, maxLogEntries)
-	var writeIdx int
-	var readIdx int
+	var maxLogEntries = flag.Int("max-log-entries", 10, "Maximum number of log entries to keep. Approx 1KB/entry.")
+	var logReadInteval = flag.Int("log-read-inteval", 3, "Interval, in seconds, to read syslog into memory.")
+	var syslogPort = flag.Int("syslog-port", 514, "Syslog port to listen on.")
+	var syslogHost = flag.String("syslog-host", "0.0.0.0", "Syslog host to listen on.")
+	var isParseSev = flag.Bool("sev", false, "Parse the syslog severity tag")
+	flag.Parse()
 
 	channel := make(syslog.LogPartsChannel)
 	handler := syslog.NewChannelHandler(channel)
@@ -21,28 +24,32 @@ func main() {
 	server := syslog.NewServer()
 	server.SetFormat(syslog.Automatic)
 	server.SetHandler(handler)
-	server.ListenUDP("0.0.0.0:10514")
-	server.ListenTCP("0.0.0.0:10514")
+	sysLogServerDetail := fmt.Sprintf("%s:%d", *syslogHost, *syslogPort)
+	server.ListenUDP(sysLogServerDetail)
+	server.ListenTCP(sysLogServerDetail)
 	server.Boot()
-	fmt.Println("Log collector started.")
+
+	logArr := make([]string, *maxLogEntries, *maxLogEntries)
+	var writeIdx int
+	var readIdx int
+	fmt.Printf("Syslog collector started on: %s \n", sysLogServerDetail)
 
 	go func(channel syslog.LogPartsChannel) {
 		var logEntry string
 		for logParts := range channel {
 			// fmt.Println(logParts)
-			logEntry = *parseLogEntry(logParts)
+			logEntry = *parseLogEntry(logParts, *isParseSev)
 			newWriteIdx := writeIdx + 1
-			if newWriteIdx >= maxLogEntries {
+			if newWriteIdx >= *maxLogEntries {
 				newWriteIdx = 0
 			}
 			logArr[newWriteIdx] = logEntry
 			writeIdx = newWriteIdx
-
 			// fmt.Printf(logArr[newWriteIdx])
 		}
 	}(channel)
 
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(time.Duration(*logReadInteval) * time.Second)
 	go func() {
 		for {
 			select {
@@ -50,7 +57,7 @@ func main() {
 				for readIdx != writeIdx {
 					fmt.Printf(logArr[readIdx])
 					readIdx++
-					if readIdx == maxLogEntries {
+					if readIdx == *maxLogEntries {
 						readIdx = 0
 					}
 				}
@@ -67,7 +74,7 @@ func main() {
 	server.Wait()
 }
 
-func parseLogEntry(logParts format.LogParts) *string {
+func parseLogEntry(logParts format.LogParts, isParseSev bool) *string {
 	// RFC3164
 	// 	"timestamp": p.header.timestamp,
 	// 	"hostname":  p.header.hostname,
@@ -96,13 +103,19 @@ func parseLogEntry(logParts format.LogParts) *string {
 	if tag == nil {
 		tag = logParts["app_name"]
 	}
-	sev := parseSeverity(logParts["severity"])
 	msg := logParts["message"]
 	if msg == nil {
 		msg = logParts["content"]
 	}
-	str := fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
-	return &str
+	var logStr string
+	if isParseSev {
+		sev := parseSeverity(logParts["severity"])
+		logStr = fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
+	} else {
+		logStr = fmt.Sprintf("[%s][%s][%s]: %s\n", ts, hostname, tag, msg)
+	}
+	// logStr := fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
+	return &logStr
 }
 
 func parseSeverity(sev interface{}) string {
