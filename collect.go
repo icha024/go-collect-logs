@@ -22,7 +22,8 @@ func main() {
 	var syslogPort = flag.Int("syslog-port", 10514, "Syslog port to listen on.")
 	var host = flag.String("host", "0.0.0.0", "Service host to listen on.")
 	var port = flag.Int("port", 3000, "Service port to listen on.")
-	var isParseSev = flag.Bool("sev", false, "Parse the syslog severity header")
+	var enableParseSev = flag.Bool("sev", false, "Parse the syslog severity header")
+	var enableStdout = flag.Bool("stdout", true, "Print syslog received to stdout")
 	flag.Parse()
 
 	channel := make(syslog.LogPartsChannel)
@@ -38,7 +39,6 @@ func main() {
 
 	logArr := make([]string, *maxLogEntries, *maxLogEntries)
 	var writeIdx int
-	var readIdx int
 	broker := sse.NewServer()
 	fmt.Printf("Syslog collector started on: %s \n", syslogServerDetail)
 
@@ -46,7 +46,7 @@ func main() {
 		var logEntry string
 		for logParts := range channel {
 			// fmt.Println(logParts)
-			logEntry = *parseLogEntry(logParts, *isParseSev)
+			logEntry = *parseLogEntry(logParts, *enableParseSev)
 			newWriteIdx := writeIdx + 1
 			if newWriteIdx >= *maxLogEntries {
 				newWriteIdx = 0
@@ -59,19 +59,48 @@ func main() {
 
 	ticker := time.NewTicker(time.Duration(*logReadInteval) * time.Second)
 	go func() {
+		var readIdx int
 		for {
 			select {
 			case <-ticker.C:
 				var buf bytes.Buffer // A Buffer needs no initialization.
-				for readIdx != writeIdx {
-					fmt.Printf(logArr[readIdx])
-					// broker.Notifier <- []byte(logArr[readIdx])
-					buf.Write([]byte(logArr[readIdx]))
-					readIdx++
-					if readIdx == *maxLogEntries {
-						readIdx = 0
+				// for readIdx != writeIdx {
+				// 	fmt.Printf(logArr[readIdx])
+				// 	// broker.Notifier <- []byte(logArr[readIdx])
+				// 	buf.Write([]byte(logArr[readIdx]))
+				// 	readIdx++
+				// 	if readIdx == *maxLogEntries {
+				// 		readIdx = 0
+				// 	}
+				// }
+
+				// if *enableStdout {
+				// 	for readIdx != writeIdx {
+				// 		fmt.Printf(logArr[readIdx])
+				// 		readIdx++
+				// 		if readIdx == *maxLogEntries {
+				// 			readIdx = 0
+				// 		}
+				// 	}
+				// }
+
+				tmp := writeIdx
+				searchIdx := tmp
+				for readIdx != searchIdx {
+					// fmt.Printf(logArr[searchIdx])
+					buf.Write([]byte(logArr[searchIdx]))
+					searchIdx--
+				}
+				if *enableStdout {
+					for readIdx != writeIdx {
+						fmt.Printf(logArr[readIdx])
+						readIdx++
+						if readIdx == *maxLogEntries {
+							readIdx = 0
+						}
 					}
 				}
+				readIdx = tmp
 				broker.Notifier <- buf.Bytes()
 			}
 		}
@@ -111,7 +140,7 @@ func main() {
 	server.Wait()
 }
 
-func parseLogEntry(logParts format.LogParts, isParseSev bool) *string {
+func parseLogEntry(logParts format.LogParts, enableParseSev bool) *string {
 	// RFC3164
 	// 	"timestamp": p.header.timestamp,
 	// 	"hostname":  p.header.hostname,
@@ -145,7 +174,7 @@ func parseLogEntry(logParts format.LogParts, isParseSev bool) *string {
 		msg = logParts["content"]
 	}
 	var logStr string
-	if isParseSev {
+	if enableParseSev {
 		sev := parseSeverity(logParts["severity"])
 		logStr = fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
 	} else {
