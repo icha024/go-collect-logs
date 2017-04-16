@@ -1,0 +1,15 @@
+@charset 'UTF-8';
+/**
+ * Main SCSS
+ * Version 1.0.0
+ * built with foundation-sites
+ */
+
+// import custom settings
+// @import 'settings';
+
+// import foundation sass
+@import "../bower_components/foundation-sites/scss/foundation";
+
+/* either include all foundation components…  //*/
+@include foundation-everything;

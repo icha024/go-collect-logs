@@ -1,8 +1,10 @@
 go-collect-logs
 *.iml
 .DS_Store
-web/node_modules
 /dist
 /.tmp
-/.sass-cache
-/bower_components
+
+web/node_modules
+web/bower_components
+web/build
+web/.sass-cache
