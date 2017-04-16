@@ -30,7 +30,7 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 
 func main() {
 	var maxLogEntries = flag.Int("max-log", 50000, "Maximum number of log entries to keep. Approx 1KB/entry.")
-	var maxFilterEntries = flag.Int("max-filter", 100, "Maximum number of fitlered log entries to return.")
+	var maxFilterEntries = flag.Int("max-filter", 1000, "Maximum number of fitlered log entries to return.")
 	var logReadInteval = flag.Int("log-read-inteval", 3, "Interval, in seconds, to read syslog into memory.")
 	var syslogHost = flag.String("syslog-host", "0.0.0.0", "Syslog host to listen on.")
 	var syslogPort = flag.Int("syslog-port", 10514, "Syslog port to listen on.")
@@ -120,7 +120,7 @@ func main() {
 			if len(query) > 0 {
 				qSplit := strings.Split(query, "|")
 				for _, elem := range qSplit {
-					curMatch := strings.Contains(logEntry, strings.TrimSpace(elem))
+					curMatch := strings.Contains(strings.ToLower(logEntry), strings.ToLower(strings.TrimSpace(elem)))
 					if !curMatch {
 						match = false
 						break

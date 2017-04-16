@@ -2,9 +2,22 @@ var streamEndPoint = "http://localhost:3000/stream"
 var filterEndPoint = "http://localhost:3000/filter"
 
 var filterVal = ''
+var source
 
-var source = new EventSource(streamEndPoint);
-source.onmessage = function(event) {startSse(event)};
+var $textarea = $("#log-box[readonly]");
+$.get(filterEndPoint + "?q=" + filterVal,
+    function(data, status){
+        if (status == "success"){
+            console.log("Got data")
+            $("#log-box[readonly]").html(data)
+            source = new EventSource(streamEndPoint);
+            source.onmessage = function(event) {startSse(event)};
+            $textarea.scrollTop($textarea[0].scrollHeight);
+        }
+        // console.log("status: " + status)
+        // console.log("Data Loaded: " + data);
+    }
+);
 
 function startSse(event){
     // document.getElementById("result").innerHTML += event.data + "<br>";
@@ -18,7 +31,7 @@ function startSse(event){
         for (var x=0; x<eventSplit.length; x++) {
             for (var i=0; i<filterValSplit.length; i++) {
                 // console.log("checking " + filterValSplit[i])
-                if (eventSplit[x].indexOf(filterValSplit[i].trim()) != -1) {
+                if (eventSplit[x].toLowerCase().indexOf(filterValSplit[i].trim().toLowerCase()) != -1) {
                     // console.log("match!")
                     match = true
                 } else {
@@ -33,7 +46,6 @@ function startSse(event){
         }
     }
     // console.log("val of box: " + $("#log-box[readonly]").val())
-    var $textarea = $("#log-box[readonly]");
     $textarea.scrollTop($textarea[0].scrollHeight);
     // $("#log-box[readonly]").scrollTop($("#log-box[readonly]").scrollHeight;
 }
