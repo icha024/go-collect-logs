@@ -3,9 +3,10 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
-	"flag"
+	// "flag"
 	"fmt"
 	"github.com/icha024/go-collect-logs/sse"
+	"github.com/namsral/flag"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"gopkg.in/mcuadros/go-syslog.v2/format"
 	"io"
@@ -28,8 +29,8 @@ func (w gzipResponseWriter) Write(b []byte) (int, error) {
 }
 
 func main() {
-	var maxLogEntries = flag.Int("max-log-entries", 50000, "Maximum number of log entries to keep. Approx 1KB/entry.")
-	var maxFilterEntries = flag.Int("max-filter-entries", 100, "Maximum number of fitlered log entries to return.")
+	var maxLogEntries = flag.Int("max-log", 50000, "Maximum number of log entries to keep. Approx 1KB/entry.")
+	var maxFilterEntries = flag.Int("max-filter", 100, "Maximum number of fitlered log entries to return.")
 	var logReadInteval = flag.Int("log-read-inteval", 3, "Interval, in seconds, to read syslog into memory.")
 	var syslogHost = flag.String("syslog-host", "0.0.0.0", "Syslog host to listen on.")
 	var syslogPort = flag.Int("syslog-port", 10514, "Syslog port to listen on.")
@@ -53,7 +54,7 @@ func main() {
 	logArr := make([]string, *maxLogEntries, *maxLogEntries)
 	var writeIdx int
 	broker := sse.NewServer()
-	fmt.Printf("Syslog collector started on: %s \n", syslogServerDetail)
+	log.Printf("Syslog collector started on: %s \n", syslogServerDetail)
 
 	go func(channel syslog.LogPartsChannel) {
 		var logEntry string
@@ -114,6 +115,7 @@ func main() {
 			logEntry := logArr[searchIdx]
 			match := true
 			if len(query) > 0 {
+				// TODO: Split and match multiple
 				match = strings.Contains(logEntry, query)
 			}
 
@@ -121,7 +123,7 @@ func main() {
 				// fmt.Fprintf(w, "%s", logArr[searchIdx])
 				buf.Write([]byte(logArr[searchIdx]))
 			}
-			if i > *maxFilterEntries {
+			if i > *maxFilterEntries { // FIXME: check match count instead
 				break
 			}
 			searchIdx--
@@ -139,6 +141,7 @@ func main() {
 	})
 	http.Handle("/stream", broker)
 	serverDetail := fmt.Sprintf("%s:%d", *host, *port)
+	log.Printf("Starting HTTP server on %s", serverDetail)
 	log.Fatal("HTTP server error: ", http.ListenAndServe(serverDetail, nil))
 	server.Wait()
 }
