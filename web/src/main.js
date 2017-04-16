@@ -8,8 +8,30 @@ source.onmessage = function(event) {startSse(event)};
 
 function startSse(event){
     // document.getElementById("result").innerHTML += event.data + "<br>";
-    console.log("got: " + event.data)
-    $("#log-box[readonly]").html($("#log-box[readonly]").val() + event.data + "\n");
+    // console.log("got: " + event.data)
+    if (filterVal.len == 0) {
+        $("#log-box[readonly]").html($("#log-box[readonly]").val() + event.data + "\n");
+    } else {
+        var match = false
+        var filterValSplit = filterVal.split("|")
+        eventSplit = event.data.split("\n")
+        for (var x=0; x<eventSplit.length; x++) {
+            for (var i=0; i<filterValSplit.length; i++) {
+                // console.log("checking " + filterValSplit[i])
+                if (eventSplit[x].indexOf(filterValSplit[i].trim()) != -1) {
+                    // console.log("match!")
+                    match = true
+                } else {
+                    match = false
+                    break
+                }
+            }
+            if (match) {
+                // console.log("matched: " + eventSplit[x])
+                $("#log-box[readonly]").html($("#log-box[readonly]").val() + eventSplit[x] + "\n");
+            }
+        }
+    }
     // console.log("val of box: " + $("#log-box[readonly]").val())
     var $textarea = $("#log-box[readonly]");
     $textarea.scrollTop($textarea[0].scrollHeight);
