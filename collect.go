@@ -106,7 +106,7 @@ func main() {
 			println("invalid query: ", err)
 			return
 		}
-		log.Println("Query: ", query)
+		// log.Println("Query: ", query)
 
 		var buf bytes.Buffer
 		searchIdx := writeIdx
@@ -127,8 +127,6 @@ func main() {
 					}
 					match = true
 				}
-				// TODO: Split and match multiple
-				// match = strings.Contains(logEntry, query)
 			}
 
 			if match {
@@ -136,7 +134,7 @@ func main() {
 				matchCount++
 				buf.Write([]byte(logArr[searchIdx]))
 			}
-			if matchCount > *maxFilterEntries { // FIXME: check match count instead
+			if matchCount > *maxFilterEntries {
 				break
 			}
 			searchIdx--
