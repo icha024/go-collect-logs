@@ -13,3 +13,65 @@
 
 /* either include all foundation components…  //*/
 @include foundation-everything;
+
+$primary-colour: blue;
+
+// h1 {
+//     color: $primary-colour;
+// }
+
+// html,body {
+//     height:500px;
+// }
+
+textarea {
+    height: inherit;
+    resize: none;
+    // width: inherit;
+}
+
+/// Tweak
+.main-area {
+    position: absolute;
+    height: 97%;
+    width: 100%;
+}
+
+.log-area {
+    // position: relative;
+    // height: inherit;
+    // height: 95%;
+    // width: 100%;
+    position: absolute;
+    height: 94%;
+    width: 98%;
+    top: 1%;
+    left: 10px;
+}
+
+.filter-area {
+    position: absolute;
+    height: 10%;
+    width: 81%;
+    top: 90%;
+    left: 10px;
+
+    // position: relative;
+    // top: 90%;
+    // height: inherit;
+    // height: 20%;
+}
+
+#filter-btn {
+    position: absolute;
+    top: 90%;
+    width: 8%;
+    right: 10%;
+}
+
+#stream-btn {
+    position: absolute;
+    top: 90%;
+    width: 8%;
+    right: 1%;
+}

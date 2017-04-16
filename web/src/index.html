@@ -1,23 +1,71 @@
 <!doctype html>
 <html class="no-js" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Foundation Starter Template</title>
-    <!--<link rel="stylesheet" href="css/foundation.css" />-->
-    <link rel="stylesheet" href="css/app.css" />
-  </head>
-  <body>
-    <h1>Hello, world!</h1>
 
-    <!--<script src="js/vendor/jquery.min.js"></script>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Foundation Starter Template</title>
+  <!--<link rel="stylesheet" href="css/foundation.css" />-->
+  <link rel="stylesheet" href="css/app.css" />
+</head>
+
+<body>
+  <!--<h3>Go-collect-logs!</h3>
+  <div class="top-bar">
+    <div class="top-bar-left">
+      <ul class="dropdown menu" data-dropdown-menu>
+        <li class="menu-text">Logs Collector</li>
+        <li>
+          <a href="#">One</a>
+          <ul class="menu vertical">
+            <li><a href="#">One</a></li>
+            <li><a href="#">Two</a></li>
+            <li><a href="#">Three</a></li>
+          </ul>
+        </li>
+        <li><a href="#">Two</a></li>
+        <li><a href="#">Three</a></li>
+      </ul>
+    </div>
+    <div class="top-bar-right">
+      <p>Power by Clianz.com</p>
+      <ul class="menu">
+        <li><input type="search" placeholder="Search"></li>
+        <li><button type="button" class="button">Search</button></li>
+      </ul>
+    </div>
+  </div>-->
+
+  <!--<form>-->
+    <div class="row main-area">
+      <div class="log-area">
+        <textarea readonly id="log-box"></textarea>
+      </div>
+      <div class="input-group filter-area">
+        <!--<input class="input-group-field" type="text" placeholder="Filter query separated by | (pipe)">-->
+        <input type="text" id="filter-box" placeholder="Filter query separated by | (pipe)">
+        <!--<div class="input-group-button">-->
+        <!--<input type="button" class="button" value="Filter">-->
+        <!--</div>-->
+      </div>
+      <input type="button" class="button" id="filter-btn" value="Filter">
+      <input type="button" class="button success" id="stream-btn" value="Streaming...">
+      
+  <!--</form>-->
+    </div>
+    <!--<div>
+      end
+    </div>-->
+
+  <!--<script src="js/vendor/jquery.min.js"></script>
     <script src="js/vendor/what-input.min.js"></script>
     <script src="js/foundation.min.js"></script>-->
-    <script src="js/app.js"></script>
-    <script>
-      $(document).foundation();
-    </script>
+  <script src="js/app.js"></script>
+  <script>
+    $(document).foundation();
+  </script>
 
-  </body>
+</body>
+
 </html>

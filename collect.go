@@ -82,7 +82,7 @@ func main() {
 				tmp := writeIdx
 				searchIdx := tmp
 				for readIdx != searchIdx {
-					buf.Write([]byte(logArr[searchIdx]))
+					buf.Write([]byte("data: " + logArr[searchIdx]))
 					searchIdx--
 				}
 				if *enableStdout {
@@ -144,6 +144,7 @@ func main() {
 		}
 		w.Header().Set("Content-Encoding", "gzip")
 		w.Header().Set("Content-Type", "text/plain")
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 		gz := gzip.NewWriter(w)
 		defer gz.Close()
 		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
