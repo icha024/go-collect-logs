@@ -80,20 +80,24 @@ func main() {
 			case <-ticker.C:
 				var buf bytes.Buffer
 				tmp := writeIdx
-				searchIdx := tmp
-				for readIdx != searchIdx {
-					buf.Write([]byte("data: " + logArr[searchIdx]))
-					searchIdx--
-				}
-				if *enableStdout {
-					for readIdx != writeIdx {
+				// searchIdx := tmp
+				// for readIdx != searchIdx {
+				// 	buf.Write([]byte("data: " + logArr[searchIdx]))
+				// 	searchIdx--
+				// }
+				// if *enableStdout {
+				for readIdx != writeIdx {
+					tmp = writeIdx
+					if *enableStdout {
 						fmt.Printf(logArr[readIdx])
-						readIdx++
-						if readIdx == *maxLogEntries {
-							readIdx = 0
-						}
+					}
+					buf.Write([]byte("data: " + logArr[readIdx]))
+					readIdx++
+					if readIdx == *maxLogEntries {
+						readIdx = 0
 					}
 				}
+				// }
 				readIdx = tmp
 				broker.Notifier <- buf.Bytes()
 			}

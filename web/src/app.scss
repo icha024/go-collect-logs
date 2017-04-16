@@ -14,47 +14,63 @@
 /* either include all foundation components…  //*/
 @include foundation-everything;
 
-$primary-colour: blue;
+$font-colour: #4baf97;
+$dark-bg: #22252a;
+$light-bg: #2e3135;
 
 // h1 {
 //     color: $primary-colour;
 // }
 
-// html,body {
-//     height:500px;
-// }
-
-textarea {
-    height: inherit;
-    resize: none;
-    // width: inherit;
+html,body {
+    background-color: $dark-bg;
 }
 
-/// Tweak
-.main-area {
-    position: absolute;
-    height: 97%;
-    width: 100%;
+textarea {
+    position: fixed;
+    resize: none;
+    width: 100vw;
+    height: 90vh;
+    background-color: $light-bg !important;
+    color: $font-colour;
+}
+
+// /// Tweak
+.content {
+    height: 100vh;
+    width: 100vw;
 }
 
 .log-area {
+    // position: fixed;
     // position: relative;
     // height: inherit;
     // height: 95%;
     // width: 100%;
-    position: absolute;
-    height: 94%;
-    width: 98%;
-    top: 1%;
-    left: 10px;
+    // position: absolute;
+    // height: 5%;
+    // width: 98%;
+    // bottom: 1%;
+    // top: 1%;
+    // align-content: center;
+    // vertical-align: middle;
+    // left: 10px;
 }
 
+// .control-area {
+//     position: absolute;
+//     top: 90%;
+// }
+
 .filter-area {
-    position: absolute;
-    height: 10%;
-    width: 81%;
-    top: 90%;
-    left: 10px;
+    // position: absolute;
+    position: fixed;
+    height: 9vh;
+    width: 100vw;
+    bottom: 0px;
+    // width: 81%;
+    // top: 90%;
+    // left: 10px;
 
     // position: relative;
     // top: 90%;
@@ -62,16 +78,28 @@ textarea {
     // height: 20%;
 }
 
+#filter-box {
+    width: 75vw;
+    float: left;
+    color: $font-colour;
+}
+
 #filter-btn {
-    position: absolute;
-    top: 90%;
-    width: 8%;
-    right: 10%;
+    width: 10vw;
+    // float: right;
+    // position: absolute;
+    // top: 90%;
+    // width: 8%;
+    // right: 10%;
 }
 
 #stream-btn {
-    position: absolute;
-    top: 90%;
-    width: 8%;
-    right: 1%;
+    width: 15vw;
+    float: right;
+    color: white;
+    // position: absolute;
+    // top: 90%;
+    // width: 8%;
+    // right: 1%;
 }
+

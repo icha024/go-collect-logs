@@ -8,7 +8,7 @@ var $textarea = $("#log-box[readonly]");
 $.get(filterEndPoint + "?q=" + filterVal,
     function(data, status){
         if (status == "success"){
-            console.log("Got data")
+            // console.log("Got data")
             $("#log-box[readonly]").html(data)
             source = new EventSource(streamEndPoint);
             source.onmessage = function(event) {startSse(event)};
@@ -83,8 +83,10 @@ $("#filter-btn").click(function(event) {
         $.get(filterEndPoint + "?q=" + filterVal,
         function(data, status){
             if (status == "success"){
-                console.log("Got data")
+                // console.log("Got data")
+                data = data.split("\n").reverse().join("\n") + "\n";
                 $("#log-box[readonly]").html(data)
+                $textarea.scrollTop($textarea[0].scrollHeight);
             }
             // console.log("status: " + status)
             // console.log("Data Loaded: " + data);
@@ -93,3 +95,7 @@ $("#filter-btn").click(function(event) {
     //     console.log("nothign to filter")
     // }
 })
+
+$(function() {
+  $("#filter-box").focus();
+});

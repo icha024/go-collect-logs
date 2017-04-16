@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta http-equiv="x-ua-compatible" content="ie=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, height=device-height" />
   <title>Foundation Starter Template</title>
   <!--<link rel="stylesheet" href="css/foundation.css" />-->
   <link rel="stylesheet" href="css/app.css" />
@@ -38,23 +38,28 @@
   </div>-->
 
   <!--<form>-->
-    <div class="row main-area">
-      <div class="log-area">
-        <textarea readonly id="log-box"></textarea>
-      </div>
-      <div class="input-group filter-area">
-        <!--<input class="input-group-field" type="text" placeholder="Filter query separated by | (pipe)">-->
-        <input type="text" id="filter-box" placeholder="Filter query separated by | (pipe)">
-        <!--<div class="input-group-button">-->
-        <!--<input type="button" class="button" value="Filter">-->
-        <!--</div>-->
-      </div>
+  <!--<div class="row">-->
+  <div class="log-area">
+      <textarea readonly id="log-box"></textarea>
+  </div>
+  <div class="row filter-area">
+    <!--<div class="small-9 columns">-->
+      <!--<input class="input-group-field" type="text" placeholder="Filter query separated by | (pipe)">-->
+      <input type="text" id="filter-box" placeholder="Filter query separated by | (pipe)">
+      <!--<div class="input-group-button">-->
+      <!--<input type="button" class="button" value="Filter">-->
+      <!--</div>-->
+    <!--</div>-->
+    <!--<div class="small-1 columns">-->
       <input type="button" class="button" id="filter-btn" value="Filter">
       <input type="button" class="button success" id="stream-btn" value="Streaming...">
-      
+    <!--</div>-->
+    <!--<div class="small-2 columns">-->
+    <!--</div>-->
+  </div>
+
   <!--</form>-->
-    </div>
-    <!--<div>
+  <!--<div>
       end
     </div>-->
 
