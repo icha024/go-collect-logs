@@ -6,5 +6,5 @@ go-collect-logs
 
 web/node_modules
 web/bower_components
-web/build
+#web/build
 web/.sass-cache
