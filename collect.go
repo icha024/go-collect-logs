@@ -3,10 +3,10 @@ package main
 import (
 	"bytes"
 	"compress/gzip"
-	// "flag"
 	"fmt"
 	"github.com/icha024/go-collect-logs/sse"
 	"github.com/namsral/flag"
+	// "go/format"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"gopkg.in/mcuadros/go-syslog.v2/format"
 	"io"
@@ -39,6 +39,7 @@ func main() {
 	var enableParseSev = flag.Bool("sev", false, "Parse the syslog severity header")
 	var enableStdout = flag.Bool("stdout", true, "Print syslog received to stdout")
 	flag.Parse()
+	log.SetPrefix("GO-COLLECT-LOGS: ")
 
 	channel := make(syslog.LogPartsChannel)
 	handler := syslog.NewChannelHandler(channel)
@@ -108,6 +109,7 @@ func main() {
 
 		var buf bytes.Buffer
 		searchIdx := writeIdx
+		matchCount := 0
 		for i := 0; i < *maxLogEntries; i++ {
 			if searchIdx < 0 {
 				searchIdx = *maxLogEntries - 1
@@ -115,15 +117,25 @@ func main() {
 			logEntry := logArr[searchIdx]
 			match := true
 			if len(query) > 0 {
+				qSplit := strings.Split(query, "|")
+				for _, elem := range qSplit {
+					curMatch := strings.Contains(logEntry, elem)
+					if !curMatch {
+						match = false
+						break
+					}
+					match = true
+				}
 				// TODO: Split and match multiple
-				match = strings.Contains(logEntry, query)
+				// match = strings.Contains(logEntry, query)
 			}
 
 			if match {
 				// fmt.Fprintf(w, "%s", logArr[searchIdx])
+				matchCount++
 				buf.Write([]byte(logArr[searchIdx]))
 			}
-			if i > *maxFilterEntries { // FIXME: check match count instead
+			if matchCount > *maxFilterEntries { // FIXME: check match count instead
 				break
 			}
 			searchIdx--
@@ -169,7 +181,11 @@ func parseLogEntry(logParts format.LogParts, enableParseSev bool) *string {
 	// "structured_data": p.structuredData,
 	// "message":         p.message,
 
-	ts := logParts["timestamp"]
+	tsField, ok := logParts["timestamp"].(time.Time)
+	if !ok {
+		tsField = time.Now()
+	}
+	ts := tsField.Format(time.RFC3339)
 	hostname := logParts["hostname"]
 	tag := logParts["tag"]
 	if tag == nil {
@@ -182,9 +198,9 @@ func parseLogEntry(logParts format.LogParts, enableParseSev bool) *string {
 	var logStr string
 	if enableParseSev {
 		sev := parseSeverity(logParts["severity"])
-		logStr = fmt.Sprintf("[%s][%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
+		logStr = fmt.Sprintf("%s [%s][%s][%s]: %s\n", ts, hostname, tag, sev, msg)
 	} else {
-		logStr = fmt.Sprintf("[%s][%s][%s]: %s\n", ts, hostname, tag, msg)
+		logStr = fmt.Sprintf("%s [%s][%s]: %s\n", ts, hostname, tag, msg)
 	}
 	return &logStr
 }
