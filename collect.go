@@ -1,18 +1,32 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"compress/gzip"
 	"flag"
 	"fmt"
 	"github.com/icha024/go-collect-logs/sse"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"gopkg.in/mcuadros/go-syslog.v2/format"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
 )
+
+// Gzip Compression
+// Ref: https://gist.github.com/bryfry/09a650eb8aac0fb76c24
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
 
 func main() {
 	var maxLogEntries = flag.Int("max-log-entries", 50000, "Maximum number of log entries to keep. Approx 1KB/entry.")
@@ -86,11 +100,14 @@ func main() {
 	}()
 
 	http.HandleFunc("/filter", func(w http.ResponseWriter, r *http.Request) {
+		// println("TRIGGER 1")
 		query, err := url.QueryUnescape(r.URL.Query().Get("q"))
 		if err != nil {
+			println("invalid query: ", err)
 			return
 		}
 
+		var buf bytes.Buffer
 		searchIdx := writeIdx
 		for i := 0; i < *maxLogEntries; i++ {
 			if searchIdx < 0 {
@@ -103,19 +120,57 @@ func main() {
 			}
 
 			if match {
-				fmt.Fprintf(w, "%s", logArr[searchIdx])
+				// fmt.Fprintf(w, "%s", logArr[searchIdx])
+				buf.Write([]byte(logArr[searchIdx]))
 			}
 			if i > *maxFilterEntries {
-				return
+				break
 			}
 			searchIdx--
 		}
+		// // fmt.Fprint(w, "hello")
+		// // println("TRIGGER 2")
+		// // fmt.Fprint(w, "hello")
+		// bufWriter := bufio.NewWriter(w)
+		// bufWriter.Write(buf.Bytes())
+		// bufWriter.Flush()
+		// // fmt.Fprint(w, buf)
+
+		// fmt.Fprintf(w, "%s", buf)
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			// handler.ServeHTTP(w, r)
+			// w.Write(buf.Bytes())
+			bufWriter := bufio.NewWriter(w)
+			bufWriter.Write(buf.Bytes())
+			bufWriter.Flush()
+		}
+		w.Header().Set("Content-Encoding", "gzip")
+		w.Header().Set("Content-Type", "text/plain")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+		gzw.Write(buf.Bytes())
+		// handler.ServeHTTP(gzw, r)
 	})
 	http.Handle("/stream", broker)
 	serverDetail := fmt.Sprintf("%s:%d", *host, *port)
 	log.Fatal("HTTP server error: ", http.ListenAndServe(serverDetail, nil))
 	server.Wait()
 }
+
+// func Gzip(handler http.Handler) http.Handler {
+// 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+// 		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+// 			handler.ServeHTTP(w, r)
+// 		}
+// 		w.Header().Set("Content-Encoding", "gzip")
+// 		w.Header().Set("Content-Type", "text/plain")
+// 		gz := gzip.NewWriter(w)
+// 		defer gz.Close()
+// 		gzw := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+// 		handler.ServeHTTP(gzw, r)
+// 	})
+// }
 
 func parseLogEntry(logParts format.LogParts, enableParseSev bool) *string {
 	// RFC3164
