@@ -155,9 +155,10 @@ func main() {
 		gzw.Write(buf.Bytes())
 		// handler.ServeHTTP(gzw, r)
 	})
-	// http.Handle("/web", http.FileServer(http.Dir("./sse")))
-	http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web/build"))))
+
 	http.Handle("/stream", broker)
+	// http.Handle("/web/", http.StripPrefix("/web/", http.FileServer(http.Dir("web/build"))))
+	http.Handle("/", http.FileServer(http.Dir("./web/build")))
 	serverDetail := fmt.Sprintf("%s:%d", *host, *port)
 	log.Printf("Starting HTTP server on %s", serverDetail)
 	log.Fatal("HTTP server error: ", http.ListenAndServe(serverDetail, nil))
