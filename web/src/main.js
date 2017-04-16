@@ -22,8 +22,12 @@ $.get(filterEndPoint + "?q=" + filterVal,
 function startSse(event){
     // document.getElementById("result").innerHTML += event.data + "<br>";
     // console.log("got: " + event.data)
-    if (filterVal.len == 0) {
-        $("#log-box[readonly]").html($("#log-box[readonly]").val() + event.data + "\n");
+    // console.log("filterVal=[" + filterVal + "]")
+    var currentVal = $("#log-box[readonly]").val()
+    if (filterVal == '') {
+        $("#log-box[readonly]").html(currentVal + event.data + "\n");
+        // console.log("Trimming data length: ", currentVal.length)
+        trimLargeTextarea(currentVal)
     } else {
         var match = false
         var filterValSplit = filterVal.split("|")
@@ -41,7 +45,8 @@ function startSse(event){
             }
             if (match) {
                 // console.log("matched: " + eventSplit[x])
-                $("#log-box[readonly]").html($("#log-box[readonly]").val() + eventSplit[x] + "\n");
+                $("#log-box[readonly]").html(currentVal + eventSplit[x] + "\n");
+                trimLargeTextarea(currentVal)
             }
         }
     }
@@ -51,7 +56,6 @@ function startSse(event){
 }
 
 $("#stream-btn").click(function(event) {
-    console.log("TOGGLE STREAM")
     if (source == null) {
         console.log("Enable STREAM")
         $("#stream-btn").val("Streaming...")
@@ -99,3 +103,10 @@ $("#filter-btn").click(function(event) {
 $(function() {
   $("#filter-box").focus();
 });
+
+function trimLargeTextarea(currentVal){
+    if (currentVal.length > 1200000) {
+        console.log("Trimming data length: ", currentVal.length)
+        $("#log-box[readonly]").html(currentVal.substr(currentVal.length/2*-1));
+    }
+}
