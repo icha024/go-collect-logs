@@ -106,6 +106,7 @@ func main() {
 			println("invalid query: ", err)
 			return
 		}
+		log.Println("Query: ", query)
 
 		var buf bytes.Buffer
 		searchIdx := writeIdx
@@ -119,7 +120,7 @@ func main() {
 			if len(query) > 0 {
 				qSplit := strings.Split(query, "|")
 				for _, elem := range qSplit {
-					curMatch := strings.Contains(logEntry, elem)
+					curMatch := strings.Contains(logEntry, strings.TrimSpace(elem))
 					if !curMatch {
 						match = false
 						break
