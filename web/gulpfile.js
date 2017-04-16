@@ -1,54 +1,109 @@
-// See: https://markgoodyear.com/2014/01/getting-started-with-gulp/
-var gulp = require('gulp'),
-    concat = require('gulp-concat'),
-    browserSync = require('browser-sync').create(),
-    uglify = require('gulp-uglify'),
-    cleanCSS = require('gulp-clean-css'),
-    autoprefixer = require('gulp-autoprefixer'),
-    htmlMin = require('gulp-htmlmin')
+var gulp       = require('gulp');
+// var beep       = require('beepbeep')
+var gutil      = require('gulp-util');
+var plumber    = require('gulp-plumber');
+var uglify     = require('gulp-uglifyjs');
+var sass       = require('gulp-ruby-sass');
+var livereload = require('gulp-livereload');
+var connect    = require('gulp-connect');
+var htmlMin    = require('gulp-htmlmin')
 
-gulp.task('browserSync', function() {
-   browserSync.init({
-      server: {
-         baseDir: 'build'
-      },
-   })
-})
+var onError = function (err) {
+    // beep([0, 0, 0]);
+    gutil.log(gutil.colors.green(err));
+};
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////
+//////////     WEBSITE TASKS
+//////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+gulp.task('connect', function() {
+  connect.server({
+    root: 'build',
+    port: 8000,
+    livereload: true
+  });
+});
+
+// JS
+gulp.task('uglifyjs', function() {
+    return gulp.src([
+        './bower_components/jquery/dist/jquery.min.js',
+        './js/main.js'
+    ])
+    .pipe(plumber({
+        errorHandler: onError
+    }))
+    .pipe(uglify('app.js', {
+        compress: false
+    }))
+    .pipe(gulp.dest('./js/'))
+    // .pipe(livereload());
+    .pipe(connect.reload());
+});
+
+// Sass
+gulp.task('sass', function() {
+    return gulp.src([
+        './scss/app.scss'
+    ])
+    .pipe(plumber({
+        errorHandler: onError
+    }))
+    .pipe(sass({
+        style: 'compressed',
+        cacheLocation: './cache/.sass-cache'
+    }))
+    .pipe(gulp.dest('./css/'))
+    // .pipe(livereload());
+    .pipe(connect.reload());
+});
+
+// HTML
 gulp.task('html', function() {
-    gulp.src(['src/**.html'])
+    return gulp.src([
+        './src/*.html'
+    ])
     .pipe(htmlMin({collapseWhitespace: true}))
     .pipe(gulp.dest('build/'))
-    .pipe(browserSync.reload({
-      stream: true
-   }))
+    // .pipe(livereload());
+    .pipe(connect.reload());
 });
 
-gulp.task('styles', function() {   
-   gulp.src(['src/styles/*.css'])
-   .pipe(concat('style.css'))
-   .pipe(autoprefixer('last 2 versions'))
-   .pipe(cleanCSS())
-   .pipe(gulp.dest('build/styles/'))
-   .pipe(browserSync.reload({
-      stream: true
-   }))
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////
+//////////     WATCH AND BUILD TASKS
+//////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// Primary task to watch other tasks
+// gulp.task('yo', function() {
+gulp.task('watch', function () {
+    // LiveReload
+    // livereload.listen();
+
+    // Watch JS
+    gulp.watch('./js/main.js', ['uglifyjs']);
+
+    // Watch Sass
+    gulp.watch(['./scss/_mixins.scss', './scss/_styles.scss', './scss/app.scss'], ['sass']);
+
+    // Watch HTML and livereload
+    gulp.watch('./src/*.html', ['html']);
 });
 
-gulp.task('scripts', function() {
-  return gulp.src('src/scripts/**/*.js')
-    // .pipe(jshint('.jshintrc'))
-    // .pipe(jshint.reporter('default'))
-    .pipe(concat('main.js'))
-    // .pipe(gulp.dest('build/scripts/'))
-    // .pipe(rename({suffix: '.min'}))
-    .pipe(uglify())
-    .pipe(gulp.dest('build/scripts/'))
-    // .pipe(notify({ message: 'Scripts task complete' }));
-});
+gulp.task('default', ['connect', 'watch']);
 
-gulp.task('default', ['browserSync', 'styles', 'html', 'scripts'], function (){
-   gulp.watch('src/styles/*.css', ['styles']);
-   gulp.watch('src/**.html', ['html']);
-   gulp.watch('src/scripts/**/*.js', ['scripts']);
-});   
+// gulp.task('watch', function () {
+//   gulp.watch(['./app/*.html'], ['html']);
+// });
+
+// Manually build all
+gulp.task('build', function() {
+    gulp.start('uglifyjs', 'sass');
+});
