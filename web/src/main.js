@@ -22,7 +22,7 @@ $.get(filterEndPoint + "?q=" + filterVal,
 function startSse(event){
     var autoScroll = false
     var originalScrollTop = $textarea.scrollTop()
-    if (originalScrollTop + ($textarea[0].scrollHeight/20) >= $textarea[0].scrollHeight) {
+    if (originalScrollTop + ($textarea[0].scrollHeight/10) >= $textarea[0].scrollHeight) {
         autoScroll = true
     }
 
