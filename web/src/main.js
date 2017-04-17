@@ -20,9 +20,12 @@ $.get(filterEndPoint + "?q=" + filterVal,
 );
 
 function startSse(event){
-    // document.getElementById("result").innerHTML += event.data + "<br>";
-    // console.log("got: " + event.data)
-    // console.log("filterVal=[" + filterVal + "]")
+    var autoScroll = false
+    var originalScrollTop = $textarea.scrollTop()
+    if (originalScrollTop + ($textarea[0].scrollHeight/20) >= $textarea[0].scrollHeight) {
+        autoScroll = true
+    }
+
     var currentVal = $("#log-box[readonly]").val()
     if (filterVal == '') {
         $("#log-box[readonly]").html(currentVal + event.data + "\n");
@@ -51,7 +54,11 @@ function startSse(event){
         }
     }
     // console.log("val of box: " + $("#log-box[readonly]").val())
-    $textarea.scrollTop($textarea[0].scrollHeight);
+    if (autoScroll) {
+        $textarea.scrollTop($textarea[0].scrollHeight);
+    } else {
+        $textarea.scrollTop(originalScrollTop)
+    }
     // $("#log-box[readonly]").scrollTop($("#log-box[readonly]").scrollHeight;
 }
 
