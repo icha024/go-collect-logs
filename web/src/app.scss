@@ -72,11 +72,11 @@ textarea {
     // width: 81%;
     // top: 90%;
     // left: 10px;
-
     // position: relative;
     // top: 90%;
     // height: inherit;
     // height: 20%;
+    max-width: 100%;
 }
 
 #filter-box {
@@ -86,7 +86,7 @@ textarea {
 }
 
 #filter-btn {
-    width: 10vw;
+    width: 80px;
     // float: right;
     // position: absolute;
     // top: 90%;
@@ -94,8 +94,8 @@ textarea {
     // right: 10%;
 }
 
-#stream-btn {
-    width: 15vw;
+#stream-btn { 
+    width: 120px;
     float: right;
     color: white;
     // position: absolute;
