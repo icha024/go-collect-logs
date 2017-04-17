@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/icha024/go-collect-logs/sse"
 	"github.com/namsral/flag"
-	// "go/format"
 	"gopkg.in/mcuadros/go-syslog.v2"
 	"gopkg.in/mcuadros/go-syslog.v2/format"
 	"io"
@@ -112,6 +111,10 @@ func main() {
 		}
 		// log.Println("Query: ", query)
 
+		qSplit := strings.Split(query, "|")
+		for i := 0; i < len(qSplit); i++ {
+			qSplit[i] = strings.TrimSpace(qSplit[i])
+		}
 		var buf bytes.Buffer
 		searchIdx := writeIdx
 		matchCount := 0
@@ -121,10 +124,9 @@ func main() {
 			}
 			logEntry := logArr[searchIdx]
 			match := true
-			if len(query) > 0 {
-				qSplit := strings.Split(query, "|")
+			if len(qSplit) > 0 {
 				for _, elem := range qSplit {
-					curMatch := strings.Contains(strings.ToLower(logEntry), strings.ToLower(strings.TrimSpace(elem)))
+					curMatch := strings.Contains(logEntry, elem)
 					if !curMatch {
 						match = false
 						break

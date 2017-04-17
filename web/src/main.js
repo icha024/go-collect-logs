@@ -35,7 +35,7 @@ function startSse(event){
         for (var x=0; x<eventSplit.length; x++) {
             for (var i=0; i<filterValSplit.length; i++) {
                 // console.log("checking " + filterValSplit[i])
-                if (eventSplit[x].toLowerCase().indexOf(filterValSplit[i].trim().toLowerCase()) != -1) {
+                if (eventSplit[x].indexOf(filterValSplit[i].trim()) != -1) {
                     // console.log("match!")
                     match = true
                 } else {
