@@ -57,3 +57,5 @@ docker run --rm -ti --log-driver=syslog --log-opt syslog-format=rfc3164 --log-op
 
 ## View logs on web console
 Open http://127.0.0.1:3000
+
+![Screenshot of web console](screenshot.png)
