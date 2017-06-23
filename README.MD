@@ -2,9 +2,6 @@
 
 Lightweight tool to collect syslogs (RFC3164 & RFC5424) then display them on a web console for easy viewing/searching.
 
-## Piping Docker logs to syslog
-https://docs.docker.com/engine/admin/logging/overview/
-
 ## Build and run
 To build
 ```
@@ -51,6 +48,8 @@ or redirect from your existing Docker container:
 ```
 docker run --rm -ti --log-driver=syslog --log-opt syslog-format=rfc3164 --log-opt syslog-address=udp://127.0.0.1:10514 alpine /bin/sh -c "while true; do echo My Message \$RANDOM; sleep 1; done;"
 ```
+(See piping Docker logs to syslog: `https://docs.docker.com/engine/admin/logging/overview/`)
+
 
 ## View logs on web console
 Open `http://127.0.0.1:3000`
