@@ -33,7 +33,11 @@ Usage of ./go-collect-logs:
     	Syslog port to listen on. (default 10514)
 ```
 
-## To run in Docker:
+## Running in Docker:
+See instructions on Docker hub:
+https://hub.docker.com/r/icha024/go-collect-logs/
+
+To build your own:
 ```
 docker build -t go-collect-logs
 docker run --rm -ti -p 3000:3000 -p 10514:10514/UDP -p 10514:10514/TCP go-collect-logs
@@ -48,8 +52,8 @@ or redirect from your existing Docker container:
 ```
 docker run --rm -ti --log-driver=syslog --log-opt syslog-format=rfc3164 --log-opt syslog-address=udp://127.0.0.1:10514 alpine /bin/sh -c "while true; do echo My Message \$RANDOM; sleep 1; done;"
 ```
-(See piping Docker logs to syslog: `https://docs.docker.com/engine/admin/logging/overview/`)
+(See piping Docker logs to syslog: https://docs.docker.com/engine/admin/logging/overview/)
 
 
 ## View logs on web console
-Open `http://127.0.0.1:3000`
+Open http://127.0.0.1:3000
