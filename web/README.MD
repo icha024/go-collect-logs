@@ -2,8 +2,9 @@
 
 Install NPM & Bower pre-req
 ```
+gem install sass
 npm install
-bower install jquery
+bower install jquery foundation-sites
 ```
 
 Start Gulping

@@ -18,10 +18,6 @@ $font-colour: #4baf97;
 $dark-bg: #22252a;
 $light-bg: #2e3135;
 
-// h1 {
-//     color: $primary-colour;
-// }
-
 html,body {
     background-color: $dark-bg;
 }
@@ -36,50 +32,21 @@ textarea {
     font-size: 12px;
 }
 
-// /// Tweak
+// Tweak
 .content {
     height: 100vh;
     width: 100vw;
-}
-
-.log-area {
-    // position: fixed;
-    // position: relative;
-    // height: inherit;
-    // height: 95%;
-    // width: 100%;
-    // position: absolute;
-    // height: 5%;
-    // width: 98%;
-    // bottom: 1%;
-    // top: 1%;
-    // align-content: center;
-    // vertical-align: middle;
-    // left: 10px;
 }
 
 #log-box {
     cursor: text;
 }
 
-// .control-area {
-//     position: absolute;
-//     top: 90%;
-// }
-
 .filter-area {
-    // position: absolute;
     position: fixed;
     height: 9vh;
     width: 100vw;
     bottom: 0px;
-    // width: 81%;
-    // top: 90%;
-    // left: 10px;
-    // position: relative;
-    // top: 90%;
-    // height: inherit;
-    // height: 20%;
     max-width: 100%;
 }
 
@@ -91,28 +58,16 @@ textarea {
 
 #filter-btn {
     width: 80px;
-    // float: right;
-    // position: absolute;
-    // top: 90%;
-    // width: 8%;
-    // right: 10%;
 }
 
 #stream-btn { 
     width: 120px;
     float: right;
     color: white;
-    // position: absolute;
-    // top: 90%;
-    // width: 8%;
-    // right: 1%;
 }
 
 #powered-by-tag {
     position: absolute;
-    // float: right;
-    // padding-top: 0px;
-    // top: 0px;
     left: 10px;
     font-size: 70%;
     color: grey;
