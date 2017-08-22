@@ -1,6 +1,6 @@
 # Go Collect Logs
 
-Lightweight tool to collect syslogs (RFC3164 & RFC5424) then display them on a web console for easy viewing/searching.
+Lightweight tool to collect syslogs (RFC3164 & RFC5424) in-memory then display them on a web console for easy viewing/searching.
 
 ## Build and run
 To build
@@ -18,7 +18,7 @@ Usage of ./go-collect-logs:
   -log-read-inteval int
     	Interval, in seconds, to read syslog into memory. (default 3)
   -max-filter int
-    	Maximum number of fitlered log entries to return. (default 1000)
+    	Maximum number of filtered log entries to return. (default 1000)
   -max-log int
     	Maximum number of log entries to keep. Approx 1KB/entry. (default 50000)
   -port int
